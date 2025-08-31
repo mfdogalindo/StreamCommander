@@ -1,0 +1,26 @@
+{
+  "name": "Default Profile",
+  "grid_size": { "rows": 3, "cols": 5 },
+  "controls": [
+    {
+      "id": "vol_down",
+      "type": "button",
+      "position": { "row": 0, "col": 0 },
+      "label": "Vol-",
+      "action": {
+        "type": "SYSTEM_COMMAND",
+        "command": "volume_down"
+      }
+    },
+    {
+      "id": "vol_up",
+      "type": "button",
+      "position": { "row": 0, "col": 1 },
+      "label": "Vol+",
+      "action": {
+        "type": "SYSTEM_COMMAND",
+        "command": "volume_up"
+      }
+    }
+  ]
+}
