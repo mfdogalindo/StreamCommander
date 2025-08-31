@@ -16,6 +16,12 @@
       "shell": {
         "all": false,
         "open": true
+      },
+      "fs": {
+        "all": false,
+        "writeFile": true,
+        "readTextFile": true,
+        "scope": ["$RESOURCE/*"]
       }
     },
     "bundle": {

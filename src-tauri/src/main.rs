@@ -3,6 +3,8 @@
 
 use cpvc::{get_system_volume, set_system_volume};
 use serde::{Deserialize, Serialize};
+use std::fs;
+use tauri::api::path::resource_dir;
 
 // --- Profile Structures ---
 #[derive(Serialize, Deserialize, Clone)]
@@ -62,9 +64,30 @@ fn volume_down() -> Result<(), String> {
 }
 
 #[tauri::command]
-fn get_profile() -> Result<Profile, String> {
-    let profile_str = include_str!("default-profile.json");
-    serde_json::from_str(profile_str).map_err(|e| e.to_string())
+fn get_profile(app: tauri::AppHandle) -> Result<Profile, String> {
+    let resource_path = resource_dir(app.package_info())
+        .ok_or_else(|| "Failed to get resource directory".to_string())?
+        .join("default-profile.json");
+
+    if !resource_path.exists() {
+        // If it doesn't exist, create it from the embedded default
+        let profile_str = include_str!("default-profile.json");
+        fs::write(&resource_path, profile_str).map_err(|e| e.to_string())?;
+        return serde_json::from_str(profile_str).map_err(|e| e.to_string());
+    }
+
+    let profile_str = fs::read_to_string(resource_path).map_err(|e| e.to_string())?;
+    serde_json::from_str(&profile_str).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn save_profile(app: tauri::AppHandle, profile: Profile) -> Result<(), String> {
+    let resource_path = resource_dir(app.package_info())
+        .ok_or_else(|| "Failed to get resource directory".to_string())?
+        .join("default-profile.json");
+
+    let json_string = serde_json::to_string_pretty(&profile).map_err(|e| e.to_string())?;
+    fs::write(resource_path, json_string).map_err(|e| e.to_string())
 }
 
 
@@ -73,7 +96,8 @@ fn main() {
     .invoke_handler(tauri::generate_handler![
         volume_up,
         volume_down,
-        get_profile
+        get_profile,
+        save_profile
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
